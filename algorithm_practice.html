@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IGCSE CS 0478 Parsons Problems</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .drag-item {
+            cursor: grab;
+            transition: all 0.2s;
+            user-select: none;
+        }
+        .drag-item:active {
+            cursor: grabbing;
+        }
+        .placeholder {
+            min-height: 50px;
+            border: 2px dashed #cbd5e1;
+            border-radius: 0.5rem;
+        }
+        .correct {
+            border-color: #22c55e !important;
+            background-color: #f0fdf4;
+        }
+        .incorrect {
+            border-color: #ef4444 !important;
+            background-color: #fef2f2;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen p-4 md:p-8 font-sans">
+    <div class="max-w-4xl mx-auto">
+        <header class="mb-8 text-center">
+            <h1 class="text-3xl font-bold text-slate-800 mb-2">Algorithm Parsons Problems</h1>
+            <p class="text-slate-600">CAIE IGCSE Computer Science (0478) - Paper 2 Preparation</p>
+            <div class="mt-4 flex justify-center gap-4">
+                <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded">Standard Algorithms</span>
+                <span class="bg-purple-100 text-purple-800 text-xs font-semibold px-2.5 py-0.5 rounded">Pseudocode Practice</span>
+            </div>
+        </header>
+
+        <div id="problems-container" class="space-y-12">
+            <!-- Problems will be injected here -->
+        </div>
+
+        <footer class="mt-12 pt-8 border-t border-slate-200 text-center text-slate-500 text-sm">
+            <p>Drag the pseudocode blocks from the left into the correct order on the right.</p>
+        </footer>
+    </div>
+
+    <script>
+        const problems = [
+            {
+                id: 'linear-search',
+                title: '1. Linear Search',
+                description: 'Complete the algorithm to find if a "target" value exists in the array "myList".',
+                solution: [
+                    'found ← FALSE',
+                    'target ← 15',
+                    'FOR i ← 0 TO LEN(myList) - 1',
+                    '  IF myList[i] = target THEN',
+                    '    found ← TRUE',
+                    '    OUTPUT "Target found at index ", i',
+                    '  ENDIF',
+                    'NEXT i',
+                    'IF found = FALSE THEN OUTPUT "Not found"'
+                ],
+                distractors: []
+            },
+            {
+                id: 'bubble-sort',
+                title: '2. Bubble Sort (Ascending)',
+                description: 'Order the blocks to correctly implement a standard bubble sort for an array of size "n".',
+                solution: [
+                    'n ← LEN(myList)',
+                    'FOR j ← 0 TO n - 2',
+                    '  FOR i ← 0 TO n - j - 2',
+                    '    IF myList[i] > myList[i+1] THEN',
+                    '      temp ← myList[i]',
+                    '      myList[i] ← myList[i+1]',
+                    '      myList[i+1] ← temp',
+                    '    ENDIF',
+                    '  NEXT i',
+                    'NEXT j'
+                ],
+                distractors: []
+            },
+            {
+                id: 'totalling',
+                title: '3. Totalling and Averaging',
+                description: 'Input 10 numbers, keep a running total, and output the final average.',
+                solution: [
+                    'total ← 0',
+                    'FOR counter ← 1 TO 10',
+                    '  OUTPUT "Enter a number:"',
+                    '  INPUT num',
+                    '  total ← total + num',
+                    'NEXT counter',
+                    'average ← total / 10',
+                    'OUTPUT "The average is ", average'
+                ],
+                distractors: []
+            },
+            {
+                id: 'extremes',
+                title: '4. Finding Max and Min',
+                description: 'Identify the highest and lowest values within the "marks" array.',
+                solution: [
+                    'max ← marks[0]',
+                    'min ← marks[0]',
+                    'FOR i ← 1 TO LEN(marks) - 1',
+                    '  score ← marks[i]',
+                    '  IF score > max THEN',
+                    '    max ← score',
+                    '  ELSEIF score < min THEN',
+                    '    min ← score',
+                    '  ENDIF',
+                    'NEXT i'
+                ],
+                distractors: []
+            }
+        ];
+
+        function shuffle(array) {
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex != 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
+
+        function createProblemUI(problem) {
+            const container = document.createElement('div');
+            container.className = 'bg-white rounded-xl shadow-sm border border-slate-200 p-6';
+            
+            const shuffled = shuffle([...problem.solution]);
+            
+            container.innerHTML = `
+                <h2 class="text-xl font-bold text-slate-800 mb-2">${problem.title}</h2>
+                <p class="text-slate-600 mb-6 text-sm">${problem.description}</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Available Blocks</h3>
+                        <div id="source-${problem.id}" class="space-y-2 p-4 bg-slate-100 rounded-lg min-h-[200px]" ondrop="drop(event)" ondragover="allowDrop(event)">
+                            ${shuffled.map((line, idx) => `
+                                <div id="${problem.id}-item-${idx}" draggable="true" ondragstart="drag(event)" class="drag-item bg-white p-3 rounded border border-slate-300 shadow-sm text-sm font-mono whitespace-pre">${line.trim()}</div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Your Solution</h3>
+                        <div id="target-${problem.id}" class="space-y-2 p-4 bg-blue-50 border-2 border-blue-100 rounded-lg min-h-[200px]" ondrop="drop(event)" ondragover="allowDrop(event)">
+                        </div>
+                        <div class="mt-4 flex items-center justify-between">
+                            <button onclick="checkSolution('${problem.id}')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">Check Logic</button>
+                            <span id="feedback-${problem.id}" class="text-sm font-medium"></span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            return container;
+        }
+
+        function allowDrop(ev) {
+            ev.preventDefault();
+        }
+
+        function drag(ev) {
+            ev.dataTransfer.setData("text", ev.target.id);
+        }
+
+        function drop(ev) {
+            ev.preventDefault();
+            const data = ev.dataTransfer.setData("text", ev.target.id); // Not used correctly here, fixing below
+        }
+
+        // Improved Drop logic
+        document.addEventListener('drop', function(e) {
+            e.preventDefault();
+            const id = e.dataTransfer.getData("text");
+            const draggableElement = document.getElementById(id);
+            const dropzone = e.target.closest('[ondrop="drop(event)"]');
+            if (dropzone) {
+                dropzone.appendChild(draggableElement);
+            }
+        });
+
+        function checkSolution(problemId) {
+            const target = document.getElementById(`target-${problemId}`);
+            const feedback = document.getElementById(`feedback-${problemId}`);
+            const userBlocks = Array.from(target.children).map(child => child.innerText.trim());
+            const problem = problems.find(p => p.id === problemId);
+            
+            // Note: In real Parsons problems, indentation matters, but for IGCSE we focus on line sequence.
+            const cleanedSolution = problem.solution.map(s => s.trim());
+            
+            let isCorrect = true;
+            if (userBlocks.length !== cleanedSolution.length) {
+                isCorrect = false;
+            } else {
+                for (let i = 0; i < cleanedSolution.length; i++) {
+                    if (userBlocks[i] !== cleanedSolution[i]) {
+                        isCorrect = false;
+                        break;
+                    }
+                }
+            }
+
+            if (isCorrect) {
+                target.classList.remove('border-blue-100', 'incorrect');
+                target.classList.add('correct');
+                feedback.innerText = "✓ Correct Logic!";
+                feedback.className = "text-sm font-medium text-green-600";
+            } else {
+                target.classList.remove('border-blue-100', 'correct');
+                target.classList.add('incorrect');
+                feedback.innerText = "✗ Not quite right. Check sequence.";
+                feedback.className = "text-sm font-medium text-red-600";
+            }
+        }
+
+        // Initialize
+        const mainContainer = document.getElementById('problems-container');
+        problems.forEach(p => {
+            mainContainer.appendChild(createProblemUI(p));
+        });
+    </script>
+</body>
+</html>
